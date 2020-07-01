@@ -7,7 +7,7 @@
 # Created Date: Saturday, June 27th 2020, 3:19:49 pm
 # Author: Craig Bojko (craig@pixelventures.co.uk)
 # -----
-# Last Modified: Sat Jun 27 2020
+# Last Modified: Wed Jul 01 2020
 # Modified By: Craig Bojko
 # -----
 # Copyright (c) 2020 Pixel Ventures Ltd.
@@ -15,4 +15,4 @@
 # <<licensetext>>
 ###
 
-from .customLogging import log
+from .customLogging import log, createLogger

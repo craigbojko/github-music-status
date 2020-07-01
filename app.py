@@ -1,9 +1,32 @@
+#!/usr/bin/env python3
+# -*- coding:utf-8 -*-
+###
+# Project: github-music-status
+# FilePath: /app.py
+# File: app.py
+# Created Date: Saturday, June 27th 2020, 2:12:09 pm
+# Author: Craig Bojko (craig@pixelventures.co.uk)
+# -----
+# Last Modified: Wed Jul 01 2020
+# Modified By: Craig Bojko
+# -----
+# Copyright (c) 2020 Pixel Ventures Ltd.
+# ------------------------------------
+# <<licensetext>>
+###
 
 import os
+import sys
+
+# Add ./vendors to import locations
+# Allows lambda to have vendors packaged to local dir
+vendors = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(vendors, "./vendor")) 
+
 import http.client
 import json
 from termcolor import colored
-from custom_logging import log
+from custom_logging import createLogger
 
 lastFmOrigin = 'ws.audioscrobbler.com'
 lastFmPath = '/2.0/?method=user.getrecenttracks&user=coffee_manic&limit=3&api_key=c7c4d08a4d66fa11cd3337be949a670d&format=json'
@@ -12,20 +35,24 @@ githubToken = os.environ['GITHUB_TOKEN']
 githubGraphOrigin = 'api.github.com'
 githubGraphQLPath = '/graphql'
 
+COLORS = None # type: boolean
+
+logger = createLogger(level='INFO', colors=COLORS)
+
 def fetchLastFMStatus():
   data = {}
   try:
     connection = http.client.HTTPSConnection(lastFmOrigin, 443)
     connection.request('GET', lastFmPath)
     response = connection.getresponse()
-    log("LastFM: Status: {} Reason: {}".format(response.status, response.reason), type='debug')
+    logger("LastFM: Status: {} Reason: {}".format(response.status, response.reason), type='debug')
 
     if response.status == 200:
       data = response.read().decode()
     connection.close()
     return data
   except http.client.HTTPException as error:
-    log('Error fetching LastFM data', error, type='error')
+    logger('Error fetching LastFM data', error, type='error')
     return 
 
 def pushGithubStatus(status, expires=False):
@@ -41,7 +68,7 @@ def pushGithubStatus(status, expires=False):
       clientMutationId
     }
   }"""
-  log('QUERY: ', mutator, type='debug')
+  logger('QUERY: ', mutator, type='debug')
 
   try:
     connection = http.client.HTTPSConnection(githubGraphOrigin, 443)
@@ -54,9 +81,9 @@ def pushGithubStatus(status, expires=False):
     response = connection.getresponse()
     data = response.read().decode()
     connection.close()
-    log("Github: Status: {} Reason: {}".format(response.status, response.reason), data, type='debug')
+    logger("Github: Status: {} Reason: {}".format(response.status, response.reason), data, type='debug')
   except http.client.HTTPException as error:
-    log('Error pushing Github graph data', error, type='error')
+    logger('Error pushing Github graph data', error, type='error')
     return
 
 def main():
@@ -75,17 +102,25 @@ def main():
           nowPlayingTrack = track
       except: continue
 
-    # log('Data: ', data, tracks, type='info')
-    nowPlayingTrackData = "Listening to {}: {}"\
-      .format(\
+    # logger('Data: ', data, tracks, type='info')
+  
+    nowPlayingStr = colored(nowPlaying, 'green' if nowPlaying == True else 'red' ) if COLORS else nowPlaying
+    if nowPlaying:
+      nowPlayingTrackData = "Listening to {}: {}".format(\
         nowPlayingTrack.get('artist', {}).get('#text'),\
         nowPlayingTrack.get('name', '')\
-      )\
-      if nowPlaying else ''
+      )
+      logger("Now Playing: {}".format(nowPlayingStr), nowPlayingTrackData)
+      pushGithubStatus(nowPlayingTrackData) #, expires="2020-06-28T04:00:00Z")
+    else: logger("Now Playing: {}".format(nowPlayingStr))
+    return nowPlayingTrack
 
-    log("Now Playing: {}".format(colored(nowPlaying, 'green' if nowPlaying == True else 'red' )), nowPlayingTrackData)
-    if nowPlaying: pushGithubStatus(nowPlayingTrackData) #, expires="2020-06-28T04:00:00Z")
+def lambdaHandler(event, context):
+  COLORS = False
+  logger = createLogger(level='DEBUG', colors=False)
+  message = main()
+  return { 'nowPlaying' : message }
 
 if __name__ == "__main__":
+  COLORS = True
   main()
-
