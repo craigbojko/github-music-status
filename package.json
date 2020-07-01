@@ -1,0 +1,9 @@
+{
+  "name": "github-music-status",
+  "description": "",
+  "version": "0.1.0",
+  "dependencies": {},
+  "devDependencies": {
+    "serverless-ssm-fetch": "^1.0.2"
+  }
+}

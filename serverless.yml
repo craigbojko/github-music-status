@@ -1,0 +1,183 @@
+service: github-music-status
+# app and org for use with dashboard.serverless.com
+# app: your-app-name
+# org: your-org-name
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+# frameworkVersion: "=X.X.X"
+
+plugins:
+  - serverless-ssm-fetch
+
+provider:
+  name: aws
+  runtime: python3.7
+  region: eu-west-2
+
+  stage: ${opt:stage, self:provider.custom.defaultStage}
+  profile: ${self:provider.custom.profiles.${self:provider.stage}}
+  custom:
+    defaultStage: production
+    # s3UploadBucket: thl-voucher-upload-bucket-${opt:stage, self:provider.custom.defaultStage}
+    # awsProfile: ${env:AWS_PROFILE}
+    profiles:
+      # local: pixelventures
+      # development: ${self:provider.custom.awsProfile}
+      # test: ${self:provider.custom.awsProfile}
+      # staging: ${self:provider.custom.awsProfile}
+      production: pixelventures
+  # environment: ${self:custom.environments.${opt:stage, self:provider.stage}}
+  iamRoleStatements:
+    # - Effect: Allow
+    #   Action:
+    #     - 's3:ListBucket'
+    #     - 's3:GetObject'
+    #   Resource: 
+    #     - Fn::Join: ['', [Fn::GetAtt: [ UploadBucket, Arn ]] ]
+    #     - Fn::Join: ['', [Fn::GetAtt: [ UploadBucket, Arn ], '/*'] ]
+    - Effect: Allow
+      Action:
+        - 'logs:*'
+      Resource: 'arn:aws:logs:::*'
+    # - Effect: Allow
+    #   Action:
+    #     - 'ec2:CreateNetworkInterface'
+    #   Resource: '*'
+  # vpc: ${self:custom.vpcConfigs.${opt:stage, self:provider.stage}}
+
+package:
+  include:
+    - custom_logging
+    - include-me-dir/**
+  exclude:
+    - .vscode
+
+functions:
+  app:
+    handler: app.lambdaHandler
+    memorySize: 128 # optional, in MB, default is 1024
+    timeout: 15 # optional, in seconds, default is 6
+    environment: ${self:custom.environments.${opt:stage, self:provider.stage}}
+    ssmToEnvironment:
+      - GITHUB_TOKEN
+    events:
+      - http:
+          path: /update
+          method: get
+          # integration: lambda
+          cors: true
+          reqValidatorName: onlyBodyValidator
+          documentation:
+            summary: 'Updates Github User Status with now playing music'
+            description: 'Pulls LastFM now playing, posts to Github User Status as a "Listening to..." status'
+            tags:
+              - lastFM
+              - github
+              - now-playing
+              - pixelventures
+            requestModels:
+              'application/json': ImportRequest
+            responseModels:
+              'application/json': ImportResponse
+          methodResponses:
+              - ${self:custom.commonModelSchemaFragments.MethodResponse200Json}
+              # - ${self:custom.commonModelSchemaFragments.MethodResponse400Json}
+          # request:
+          #   template:
+          #     application/json: '{ "user" : "$context.userParameter" }'
+          # response:
+          #   headers:
+          #     Content-Type: "'application/json'"
+          #     Access-Control-Allow-Origin: "'*'"
+          #   template: $input.path('$')
+          #   statusCodes:
+          #     201:
+          #       pattern: '' # Default response method
+          #     409:
+          #       pattern: '.*"statusCode":409,.*' # JSON response
+          #       template: $input.path("$.errorMessage") # JSON return object
+          #       headers:
+          #         Content-Type: "'application/json+hal'"
+          #     400:
+          #       pattern: '.*[ERROR].*'
+          #       template:
+          #         application/json: >
+          #           #set ($errorMessageObj = $input.path('$.errorMessage'))
+          #           $errorMessageObj
+
+resources:
+  Resources:
+    # ServerlessSecurityGroup:
+    #   Type: AWS::EC2::SecurityGroup
+    #   Properties:
+    #     GroupDescription: SecurityGroup for THL Voucher Lambda Functions - Dev
+    #     VpcId: ${self:custom.vpcConfigs.${opt:stage, self:provider.stage}.id}
+    onlyBodyValidator:  
+      Type: 'AWS::ApiGateway::RequestValidator'
+      Properties:
+        Name: 'only-body-validator'
+        RestApiId: 
+          Ref: ApiGatewayRestApi
+        ValidateRequestBody: true
+        ValidateRequestParameters: false
+
+custom:
+  documentation:
+    api:
+      info:
+        version: ${file(./package.json):version}
+        title: v
+        description: 'Pulls LastFM now playing, posts to Github User Status as a "Listening to..." status'
+      tags:
+        - lastFM
+        - github
+        - now-playing
+        - pixelventures
+    models:
+      - name: ImportRequest
+        contentType: 'application/json'
+        schema:
+          required: 
+            - url
+          properties:
+            url:
+              type: string
+      - name: ImportResponse
+        contentType: 'application/json'
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+      # - name: 400JsonResponse
+      #   contentType: 'application/json'
+      #   schema:
+      #     type: object
+      #     properties:
+      #       message:
+      #         type: string
+      #       statusCode:
+      #         type: number
+  commonModelSchemaFragments:
+    MethodResponse200Json:
+      statusCode: '200'
+      responseModels:
+        'application/json': ImportResponse
+    # MethodResponse400Json:
+    #   statusCode: '400'
+    #   responseModels:
+    #     'application/json': 400JsonResponse
+  serverlessSsmFetch:
+    GITHUB_TOKEN: /GITHUB_USER_TOKEN~true
+  environments:
+    development:
+      ENV: development
+    production:
+      ENV: 'production'
+  # vpcConfigs:
+  #   development:
+  #     id: vpc-6638eb02
+  #     securityGroupIds:
+  #       - Fn::GetAtt: ServerlessSecurityGroup.GroupId
+  #     subnetIds:
+  #       - subnet-a36ac8fb
