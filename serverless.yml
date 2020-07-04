@@ -54,7 +54,7 @@ package:
 
 functions:
   app:
-    handler: app.lambdaHandler
+    handler: app.lambda_handler
     memorySize: 128 # optional, in MB, default is 1024
     timeout: 15 # optional, in seconds, default is 6
     environment: ${self:custom.environments.${opt:stage, self:provider.stage}}
