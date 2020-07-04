@@ -7,7 +7,7 @@
 # Created Date: Sunday, June 28th 2020, 10:20:19 pm
 # Author: Craig Bojko (craig@pixelventures.co.uk)
 # -----
-# Last Modified: Sun Jun 28 2020
+# Last Modified: Sat Jul 04 2020
 # Modified By: Craig Bojko
 # -----
 # Copyright (c) 2020 Pixel Ventures Ltd.
@@ -32,5 +32,10 @@ setup(
     author_email='craig@pixelventures.co.uk',
     url='https://github.com/pixelventures/github-music-status',
     # license=license,
-    packages=find_packages(exclude=('tests', 'docs'))
+    packages=find_packages(exclude=('tests', 'docs')),
+    install_requires=[
+        "termcolor",
+        "pytest",
+        "pylint"
+    ]
 )
