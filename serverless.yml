@@ -64,7 +64,7 @@ functions:
       - http:
           path: /update
           method: get
-          # integration: lambda
+          integration: lambda
           cors: true
           reqValidatorName: onlyBodyValidator
           documentation:
@@ -76,9 +76,9 @@ functions:
               - now-playing
               - pixelventures
             requestModels:
-              'application/json': ImportRequest
+              'application/json': QueryRequest
             responseModels:
-              'application/json': ImportResponse
+              'application/json': QueryResponse
           methodResponses:
               - ${self:custom.commonModelSchemaFragments.MethodResponse200Json}
               # - ${self:custom.commonModelSchemaFragments.MethodResponse400Json}
@@ -134,7 +134,7 @@ custom:
         - now-playing
         - pixelventures
     models:
-      - name: ImportRequest
+      - name: QueryRequest
         contentType: 'application/json'
         schema:
           required: 
@@ -142,12 +142,12 @@ custom:
           properties:
             url:
               type: string
-      - name: ImportResponse
+      - name: QueryResponse
         contentType: 'application/json'
         schema:
           type: object
           properties:
-            message:
+            nowPlaying:
               type: string
       # - name: 400JsonResponse
       #   contentType: 'application/json'
@@ -162,7 +162,7 @@ custom:
     MethodResponse200Json:
       statusCode: '200'
       responseModels:
-        'application/json': ImportResponse
+        'application/json': QueryResponse
     # MethodResponse400Json:
     #   statusCode: '400'
     #   responseModels:

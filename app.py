@@ -8,7 +8,7 @@
 # Created Date: Saturday, June 27th 2020, 2:12:09 pm
 # Author: Craig Bojko (craig@pixelventures.co.uk)
 # -----
-# Last Modified: Sat Jul 04 2020
+# Last Modified: Sun Jul 05 2020
 # Modified By: Craig Bojko
 # -----
 # Copyright (c) 2020 Pixel Ventures Ltd.
@@ -20,14 +20,14 @@ import os
 import sys
 import http.client
 import json
-from termcolor import colored
-from custom_logging import create_logger
 
 # Add ./vendors to import locations
 # Allows lambda to have vendors packaged to local dir
 vendors = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(os.path.join(vendors, "./vendor"))
 
+from termcolor import colored
+from custom_logging import create_logger
 
 LAST_FM_ORIGIN = "ws.audioscrobbler.com"
 LAST_FM_PATH = "/2.0/?method=user.getrecenttracks&user=coffee_manic&limit=3&api_key=c7c4d08a4d66fa11cd3337be949a670d&format=json"
@@ -147,7 +147,7 @@ def main(colors=True):
     return now_playing_track
 
 
-def lambda_handler():
+def lambda_handler(event, context):
     """
     Handler function for AWS Lambda - initial entry point
     """

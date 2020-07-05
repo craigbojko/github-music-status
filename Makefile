@@ -71,6 +71,7 @@ doc: venv
 	$(VENV_ACTIVATE) && cd docs; make html
 
 ci:
+	python -m pip install --upgrade pip
 	pip install -t vendor -r requirements.txt
 	npm install
 
