@@ -60,6 +60,8 @@ functions:
     environment: ${self:custom.environments.${opt:stage, self:provider.stage}}
     ssmToEnvironment:
       - GITHUB_TOKEN
+      - LAST_FM_API_TOKEN
+      - LAST_FM_USERNAME
     events:
       - http:
           path: /update
@@ -169,6 +171,8 @@ custom:
     #     'application/json': 400JsonResponse
   serverlessSsmFetch:
     GITHUB_TOKEN: /GITHUB_USER_TOKEN~true
+    LAST_FM_API_TOKEN: /LAST_FM_API_TOKEN~true
+    LAST_FM_USERNAME: /LAST_FM_USERNAME
   environments:
     development:
       ENV: development

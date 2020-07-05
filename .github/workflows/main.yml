@@ -5,7 +5,7 @@ on:
     branches: [ master ]
 
 jobs:
-  prepare:
+  deploy:
     runs-on: ubuntu-latest
     steps:
     - name: checkout workspace

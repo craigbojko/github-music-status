@@ -29,8 +29,11 @@ sys.path.append(os.path.join(vendors, "./vendor"))
 from termcolor import colored
 from custom_logging import create_logger
 
+LAST_FM_USERNAME = os.environ["LAST_FM_USERNAME"]
+LAST_FM_API_TOKEN = os.environ["LAST_FM_TOKEN"]
 LAST_FM_ORIGIN = "ws.audioscrobbler.com"
-LAST_FM_PATH = "/2.0/?method=user.getrecenttracks&user=coffee_manic&limit=3&api_key=c7c4d08a4d66fa11cd3337be949a670d&format=json"
+LAST_FM_PATH = "/2.0/?method=user.getrecenttracks&user={}&limit=3&api_key={}&format=json"\
+    .format(LAST_FM_USERNAME, LAST_FM_API_TOKEN)
 
 GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
 GITHUB_GRAPH_ORIGIN = "api.github.com"
