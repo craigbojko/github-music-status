@@ -30,10 +30,10 @@ jobs:
     runs-on: ubuntu-latest
     needs: [prepare]
     steps:
-    - name: serverless deploy
-      uses: serverless/github-action@v1.53.0
-      with:
-        args: deploy
+    - name: make deploy
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      run: |
+        make deploy
+      
