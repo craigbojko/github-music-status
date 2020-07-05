@@ -1,4 +1,4 @@
-.PHONY: help prepare prepare-mac install test lint run run-venv doc deploy clean
+.PHONY: help prepare prepare-mac install test lint run run-venv doc ci deploy clean
 
 VENV_NAME?=venv
 VENV_ACTIVATE=. $(VENV_NAME)/bin/activate
@@ -69,6 +69,10 @@ run:
 
 doc: venv
 	$(VENV_ACTIVATE) && cd docs; make html
+
+ci:
+	pip install -t vendor -r requirements.txt
+	npm install
 
 deploy:
 	${SLS} deploy

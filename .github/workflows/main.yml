@@ -8,11 +8,22 @@ jobs:
   prepare:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: checkout workspace
+      uses: actions/checkout@v2
       with:
         fetch-depth: 1 
-    - name: make install
-      run: make install
+    - name: set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.7
+    - name: set up NPM
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12
+    - name: make ci
+      run: |
+        python -m pip install --upgrade pip
+        make ci
 
   deploy:
     name: deploy
