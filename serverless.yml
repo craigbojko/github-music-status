@@ -15,7 +15,7 @@ provider:
   region: eu-west-2
 
   stage: ${opt:stage, self:provider.custom.defaultStage}
-  profile: ${self:provider.custom.profiles.${self:provider.stage}}
+  # profile: ${self:provider.custom.profiles.${self:provider.stage}}
   custom:
     defaultStage: production
     # s3UploadBucket: thl-voucher-upload-bucket-${opt:stage, self:provider.custom.defaultStage}
