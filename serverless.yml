@@ -20,12 +20,12 @@ provider:
     defaultStage: production
     # s3UploadBucket: thl-voucher-upload-bucket-${opt:stage, self:provider.custom.defaultStage}
     # awsProfile: ${env:AWS_PROFILE}
-    profiles:
+    # profiles:
       # local: pixelventures
       # development: ${self:provider.custom.awsProfile}
       # test: ${self:provider.custom.awsProfile}
       # staging: ${self:provider.custom.awsProfile}
-      production: pixelventures
+      # production: ${self:provider.custom.awsProfile}
   # environment: ${self:custom.environments.${opt:stage, self:provider.stage}}
   iamRoleStatements:
     # - Effect: Allow
