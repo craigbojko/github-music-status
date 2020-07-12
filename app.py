@@ -8,7 +8,7 @@
 # Created Date: Saturday, June 27th 2020, 2:12:09 pm
 # Author: Craig Bojko (craig@pixelventures.co.uk)
 # -----
-# Last Modified: Sun Jul 05 2020
+# Last Modified: Sun Jul 12 2020
 # Modified By: Craig Bojko
 # -----
 # Copyright (c) 2020 Pixel Ventures Ltd.
@@ -20,6 +20,8 @@ import os
 import sys
 import http.client
 import json
+import time
+import datetime
 
 # Add ./vendors to import locations
 # Allows lambda to have vendors packaged to local dir
@@ -38,6 +40,8 @@ LAST_FM_PATH = "/2.0/?method=user.getrecenttracks&user={}&limit=3&api_key={}&for
 GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
 GITHUB_GRAPH_ORIGIN = "api.github.com"
 GITHUB_GRAPH_PATH = "/graphql"
+
+STATUS_TIMEOUT = 300
 
 LOGGER = create_logger(level="INFO", colors=True)
 
@@ -69,7 +73,9 @@ def push_github_status(status, expires=False):
     """
     POST a status message to github
     """
-    expires_at_str = ('expiresAt: "{}"'.format(expires)) if expires is False else ""
+    expires_at_str = ""
+    if expires is not False:
+        expires_at_str = ('expiresAt: "{}"'.format(expires))
     mutator = """mutation UpdateUserStatus {
         changeUserStatus(
         input: {
@@ -126,7 +132,7 @@ def main(colors=True):
     for track in tracks:
         try:
             attr = track.get("@attr", {})
-            if attr and attr.get("now_playing") == "true":
+            if attr and attr.get("nowplaying") == "true":
                 now_playing = True
                 now_playing_track = track
             else: continue
@@ -144,7 +150,10 @@ def main(colors=True):
             now_playing_track.get("name", ""),
         )
         LOGGER("Now Playing: {}".format(now_playing_str), now_playing_track_data)
-        push_github_status(now_playing_track_data)  # , expires="2020-06-28T04:00:00Z")
+        now = time.time()
+        in_five_minutes = now + STATUS_TIMEOUT
+        expiry_str = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime(in_five_minutes))
+        push_github_status(now_playing_track_data, expires=expiry_str)
     else:
         LOGGER("Now Playing: {}".format(now_playing_str))
     return now_playing_track
